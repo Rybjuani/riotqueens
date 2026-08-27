@@ -51,6 +51,14 @@ export function TierGrid({
                 </article>
               );
             })}
+            <article className="card locked" id="tier-t3">
+              <span className="tag label">PRÓXIMAMENTE</span>
+              <h3>T3 · GPU / VOZ</h3>
+              <p className="card-body">
+                esto todavía no, bobo. se prende cuando haya movimiento. ella se
+                queda.
+              </p>
+            </article>
           </div>
         </div>
       </section>
