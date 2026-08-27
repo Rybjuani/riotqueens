@@ -1,0 +1,118 @@
+name: riotqueens
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-riotqueens}
+      POSTGRES_USER: ${POSTGRES_USER:-riotqueens}
+      # Required in .env — never hardcode production secrets here.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    # No host port publish: API reaches postgres on the Compose network.
+    # Host admin: docker compose exec postgres psql -U riotqueens -d riotqueens
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: "8000"
+      RIOTQUEENS_MODEL_PROVIDER: ${RIOTQUEENS_MODEL_PROVIDER:-mock}
+      RIOTQUEENS_MODEL_BASE_URL: ${RIOTQUEENS_MODEL_BASE_URL:-}
+      RIOTQUEENS_MODEL_API_KEY: ${RIOTQUEENS_MODEL_API_KEY:-}
+      RIOTQUEENS_MODEL_NAME: ${RIOTQUEENS_MODEL_NAME:-sao10k/l3.3-euryale-70b}
+      RIOTQUEENS_MODEL_TIMEOUT_SECONDS: ${RIOTQUEENS_MODEL_TIMEOUT_SECONDS:-5.0}
+      RIOTQUEENS_MODEL_MAX_RETRIES: ${RIOTQUEENS_MODEL_MAX_RETRIES:-1}
+      RIOTQUEENS_MODEL_TEMPERATURE: ${RIOTQUEENS_MODEL_TEMPERATURE:-0.9}
+      RIOTQUEENS_MODEL_MAX_TOKENS: ${RIOTQUEENS_MODEL_MAX_TOKENS:-200}
+      RIOTQUEENS_MODEL_FREQUENCY_PENALTY: ${RIOTQUEENS_MODEL_FREQUENCY_PENALTY:-0.4}
+      RIOTQUEENS_MODEL_OMIT_FREQUENCY_PENALTY: ${RIOTQUEENS_MODEL_OMIT_FREQUENCY_PENALTY:-false}
+      RIOTQUEENS_BARDERA_PRESET: /app/prompts/bardera.preset.md
+      RIOTQUEENS_FALLBACK_MODEL_PROVIDER: ${RIOTQUEENS_FALLBACK_MODEL_PROVIDER:-}
+      RIOTQUEENS_FALLBACK_MODEL_BASE_URL: ${RIOTQUEENS_FALLBACK_MODEL_BASE_URL:-}
+      RIOTQUEENS_FALLBACK_MODEL_API_KEY: ${RIOTQUEENS_FALLBACK_MODEL_API_KEY:-}
+      RIOTQUEENS_FALLBACK_MODEL_NAME: ${RIOTQUEENS_FALLBACK_MODEL_NAME:-}
+      RIOTQUEENS_FALLBACK_MODEL_TEMPERATURE: ${RIOTQUEENS_FALLBACK_MODEL_TEMPERATURE:-}
+      RIOTQUEENS_FALLBACK_MODEL_FREQUENCY_PENALTY: ${RIOTQUEENS_FALLBACK_MODEL_FREQUENCY_PENALTY:-}
+      RIOTQUEENS_FALLBACK_MODEL_OMIT_FREQUENCY_PENALTY: ${RIOTQUEENS_FALLBACK_MODEL_OMIT_FREQUENCY_PENALTY:-false}
+      RIOTQUEENS_CORS_ORIGINS: ${RIOTQUEENS_CORS_ORIGINS:-http://localhost}
+      RIOTQUEENS_AUTH_ENABLED: ${RIOTQUEENS_AUTH_ENABLED:-true}
+      RIOTQUEENS_AUTH0_ISSUER: ${RIOTQUEENS_AUTH0_ISSUER:-}
+      RIOTQUEENS_AUTH0_AUDIENCE: ${RIOTQUEENS_AUTH0_AUDIENCE:-}
+      RIOTQUEENS_AUTH0_JWKS_URL: ${RIOTQUEENS_AUTH0_JWKS_URL:-}
+      # In-compose hostname only (not host localhost). Password from .env.
+      DATABASE_URL: postgresql://${POSTGRES_USER:-riotqueens}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:-riotqueens}
+      RIOTQUEENS_CONVERSATION_MAX_TURNS: ${RIOTQUEENS_CONVERSATION_MAX_TURNS:-8}
+      RIOTQUEENS_MEMORY_MAX_PER_SCOPE: ${RIOTQUEENS_MEMORY_MAX_PER_SCOPE:-32}
+    expose:
+      - "8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
+      interval: 15s
+      timeout: 4s
+      retries: 5
+      start_period: 10s
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api}
+        NEXT_PUBLIC_AUTH_ENABLED: ${NEXT_PUBLIC_AUTH_ENABLED:-false}
+    restart: unless-stopped
+    environment:
+      PORT: "3000"
+      AUTH0_SECRET: ${AUTH0_SECRET:-}
+      APP_BASE_URL: ${APP_BASE_URL:-}
+      AUTH0_DOMAIN: ${AUTH0_DOMAIN:-}
+      AUTH0_CLIENT_ID: ${AUTH0_CLIENT_ID:-}
+      AUTH0_CLIENT_SECRET: ${AUTH0_CLIENT_SECRET:-}
+      AUTH0_AUDIENCE: ${AUTH0_AUDIENCE:-}
+      AUTH0_SCOPE: ${AUTH0_SCOPE:-openid profile email}
+    expose:
+      - "3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://127.0.0.1:3000/"]
+      interval: 15s
+      timeout: 4s
+      retries: 5
+      start_period: 15s
+
+  caddy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./ops/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      web:
+        condition: service_healthy
+
+volumes:
+  caddy_data:
+  caddy_config:
+  postgres_data:

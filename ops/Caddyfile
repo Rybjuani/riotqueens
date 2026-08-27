@@ -1,0 +1,26 @@
+{$SITE_ADDRESS::80} {
+  encode zstd gzip
+
+  header {
+    X-Content-Type-Options "nosniff"
+    X-Frame-Options "DENY"
+    Referrer-Policy "strict-origin-when-cross-origin"
+    Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    -Server
+  }
+
+  # FastAPI only — do NOT swallow Next.js routes like /api/token.
+  handle /api/v1/* {
+    uri strip_prefix /api
+    reverse_proxy api:8000
+  }
+
+  handle /api/health {
+    uri strip_prefix /api
+    reverse_proxy api:8000
+  }
+
+  handle {
+    reverse_proxy web:3000
+  }
+}

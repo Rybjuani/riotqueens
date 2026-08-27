@@ -1,0 +1,55 @@
+node_modules/
+.next/
+dist/
+build/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+*.egg-info/
+.env
+.env.*
+!.env.example
+*.log
+*.db
+*.sqlite
+media/
+uploads/
+originals/
+derived/
+*.mp4
+*.mov
+*.wav
+*.png
+*.jpg
+*.jpeg
+*.webp
+!apps/web/public/brand/riotqueens-logo.jpeg
+!apps/web/public/queens/**/*.jpg
+!.github/
+
+# Private visual library and local working dumps; keep outside this public repo.
+fotos_studio/
+asdasdasds/
+docs_owner/
+*_BACKUP_*.md
+BACKUP_*.md
+ASSET_MANIFEST_*.csv
+README.txt
+*.html
+!docs/reference/visual/*.html
+!docs/reference/audits/Qwen_html.html
+
+# local asset rollback copies
+.asset_backup*/
+
+artifacts/evals/
+
+# Build artifacts and local dumps that never belong in Git (FIX MORDAZA 2026-08-23).
+*.tar.gz
+*.tsbuildinfo
+.env.*.bak*
+
+# Owner-curated private masters. Keep inside the canonical workspace, never in Git.
+assets/private/

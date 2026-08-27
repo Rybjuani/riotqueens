@@ -1,0 +1,1 @@
+"""RiotQueens API."""
