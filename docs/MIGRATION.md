@@ -102,19 +102,18 @@ Vast.ai RTX 4090 spot + modelo T3 del Pickle §3. No arrancar sin tope de gasto 
 
 ---
 
-## C5 — Auth0 en IP (+ dominio/TLS gated)
+## C5 — Dominio + TLS + Auth0 (completado)
 
 | Paso | Detalle | Verificación |
 |---|---|---|
-| 5.1 | Owner: callbacks Auth0 → `http://148.113.167.121/auth/callback` (+ logout/origins) | dashboard Auth0 |
-| 5.2 | Caddy: `/api/v1/*` + `/api/health` → API; **resto** (incl. `/api/token`) → web | `/api/token` sin sesión = 401 Next, no 404 FastAPI |
+| 5.1 | Auth0: URLs `https://riotqueens.live` (+ IP whitelisted) | dashboard Auth0 |
+| 5.2 | Caddy: `/api/v1/*` + `/api/health` → API; **resto** (incl. `/api/token`) → web | `/api/token` sin sesión = 401 Next |
 | 5.3 | Token route Auth0 v4: `getAccessToken()` | rebuild web |
-| 5.4 | Login redirect `/auth/login` → Auth0 con `redirect_uri` IP | 307 a tenant Auth0 |
-| 5.5 | Dominio + TLS | **GATED Owner** (cuando exista dominio) |
+| 5.4 | DNS A `@` → VPS; site `https://riotqueens.live` (sin www) | propagado |
+| 5.5 | Caddy TLS Let’s Encrypt; `SITE_ADDRESS` + `APP_BASE_URL` = `https://riotqueens.live` | candado verde |
+| 5.6 | Login `/auth/login` → Auth0 con `redirect_uri=https://riotqueens.live/auth/callback` | 307 + smoke Owner |
 
-**Hecho (2026-08-27):** Auth0 on sobre IP; bug Caddy `/api/*` corregido; smoke browser Owner: login → clickwrap → chat Bardera.
-
-**Cierre C5 (IP):** listo para uso Auth0 en `http://148.113.167.121`. Dominio/TLS queda abierto.
+**Cierre C5 (2026-08-27):** dominio `riotqueens.live` + HTTPS (Caddy) + Auth0 https whitelisted. Smoke Owner: login + chat OK.
 
 ---
 
@@ -142,6 +141,17 @@ Vast.ai RTX 4090 spot + modelo T3 del Pickle §3. No arrancar sin tope de gasto 
 | 6.2 | Primer push a `Rybjuani/riotqueens` con OK Owner | `git remote -v` |
 
 **Hecho (2026-08-27):** primer commit limpio — API nuclear sin cape, web + Auth0/Caddy, preset, docs canon PDFs, sin `.env`/`.venv`. Gemini solo como anti-leak/DESCARTADO.
+
+---
+
+## Pendiente próximo agente
+
+- **Rotación de claves** — la hace el Owner al final; no tocar secretos ahora.
+- **Preset v2 denso** — construir con material RAW que provea el Owner.
+- **Dossiers oficiales de las 6 queens** — Owner provee guiones + glosario + modismos.
+- **Polish legal (textos públicos)** — reemplazar alcohol/droga por naranju/manaos.
+- **Regla de preset** — insinuar, jamás afirmar (no vender lo que no existe).
+- **Slogan Bardera** — `"TE BARDEA. TE BANCA. SE QUEDA."` (no “te quiere”).
 
 ---
 
