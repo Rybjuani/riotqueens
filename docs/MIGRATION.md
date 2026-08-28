@@ -146,6 +146,8 @@ Vast.ai RTX 4090 spot + modelo T3 del Pickle §3. No arrancar sin tope de gasto 
 
 ## Owner Console (API) — test Euryale crudo
 
+**Deploy prod (2026-08-28):** release `clean-20260828-012200` ← `current`; API rebuild; `RIOTQUEENS_OWNER_AUTH0_SUBJECTS` seteado en `shared/runtime.env` (modo 600). Smoke: `/api/health` 200, `owner_console_configured=true`, `/v1/root/chat` sin JWT → 401.
+
 Endpoints Owner-only (chat público `/v1/chat` intacto):
 
 | Path | Qué hace |
