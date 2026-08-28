@@ -144,21 +144,60 @@ Vast.ai RTX 4090 spot + modelo T3 del Pickle §3. No arrancar sin tope de gasto 
 
 ---
 
-## Owner Console (API) — test Euryale crudo
+## Owner Console (API) — test Euryale crudo (cerrado 2026-08-28)
 
-**Deploy prod (2026-08-28):** release `clean-20260828-012200` ← `current`; API rebuild; `RIOTQUEENS_OWNER_AUTH0_SUBJECTS` seteado en `shared/runtime.env` (modo 600). Smoke: `/api/health` 200, `owner_console_configured=true`, `/v1/root/chat` sin JWT → 401.
+**Motivo:** el canal público suaviza (preset, caps, anti-leak, fallback, errors sanitizados). Para testear SAPE/rol/casting hace falta un path Owner que muestre bloqueos, rollbacks y el cartel real de OpenRouter.
 
-Endpoints Owner-only (chat público `/v1/chat` intacto):
+**Deploy prod:** release `clean-20260828-012200` ← `current`; API rebuild; allowlist en `shared/runtime.env` (modo 600). Smoke: `/api/health` 200; `owner_console_configured=true`; `/v1/root/chat` sin JWT → 401.
+
+### Endpoints (chat público `/v1/chat` intacto)
 
 | Path | Qué hace |
 |---|---|
-| `POST /v1/usuario/chat` | Pipeline prod + telemetría `owner` |
-| `POST /v1/root/chat` | Sin dossier por defecto (`system=empty\|bardera\|custom`); sin fallback/anti-leak/rewrite; cartel crudo OpenRouter en error |
-| `POST /v1/compare` | Mismo input → usuario+root + `diff`; no persiste |
+| `POST /v1/usuario/chat` | Pipeline **idéntico** a producción + telemetría `owner` (persiste) |
+| `POST /v1/root/chat` | Crudo: `system=empty` (default) \| `bardera` \| `custom`; sin fallback/anti-leak/rewrite locales; sin clamp `max_tokens`; `upstream` crudo en error |
+| `POST /v1/compare` | Mismo input → usuario + root + `diff`; **no persiste** |
 
-Gate fail-closed: `RIOTQUEENS_OWNER_AUTH0_SUBJECTS` (prod) / `RIOTQUEENS_OWNER_USER_IDS` (auth off). Sin UI todavía.
+### Gate
 
-Smoke local (auth off):
+| Entorno | Variable | Efecto |
+|---|---|---|
+| Prod (Auth0 on) | `RIOTQUEENS_OWNER_AUTH0_SUBJECTS` | CSV de Auth0 `sub`; vacío → 403 |
+| Local (auth off) | `RIOTQUEENS_OWNER_USER_IDS` | CSV de `user_id` del body; vacío → 403 |
+
+Sin UI todavía — contratos listos para panel Owner futuro.
+
+### Request root / compare (campos útiles)
+
+```json
+{
+  "character_id": "bardera",
+  "conversation_id": "…",
+  "message": "…",
+  "system": "empty",
+  "custom_system": null,
+  "persist": false,
+  "max_tokens": null,
+  "temperature": null,
+  "model": null
+}
+```
+
+- `system=custom` exige `custom_system`. **Nunca** se inyecta system diagnóstico (“modo root”, etc.).
+- `persist=true` en `/root` escribe en el **mismo** scope que el chat usuario (default `false`).
+- `/usuario` siempre persiste como `/v1/chat`.
+
+### Señales honestas (`owner` / error root)
+
+- Bloqueo → `owner.blocked` + `upstream.status/error/body_preview` (solo root).
+- Rollback → `owner.rollback` si hubo append y falló el modelo.
+- Memoria → `owner.memory.lost` si el hilo está en `max_turns` o el rollback falló.
+
+Código: `apps/api/app/domain/owner.py`, `owner_console.py`; tests `apps/api/tests/test_owner_console.py`.
+
+### Smoke
+
+Local (auth off):
 
 ```bash
 # RIOTQUEENS_AUTH_ENABLED=false RIOTQUEENS_OWNER_USER_IDS=smoke
@@ -167,6 +206,16 @@ curl -s localhost:8000/v1/root/chat -H 'content-type: application/json' \
 curl -s localhost:8000/v1/compare -H 'content-type: application/json' \
   -d '{"character_id":"bardera","conversation_id":"root1","user_id":"smoke","message":"hola","system":"empty"}'
 ```
+
+Prod (Bearer Auth0 del Owner allowlisteado):
+
+```bash
+curl -s https://riotqueens.live/api/v1/root/chat \
+  -H "Authorization: Bearer $TOKEN" -H 'content-type: application/json' \
+  -d '{"character_id":"bardera","conversation_id":"root1","message":"hola","system":"empty"}'
+```
+
+**Cierre Owner Console API:** endpoints + gate + deploy VPS + docs. UI Owner = pendiente.
 
 ---
 
@@ -178,7 +227,7 @@ curl -s localhost:8000/v1/compare -H 'content-type: application/json' \
 - **Polish legal (textos públicos)** — reemplazar alcohol/droga por naranju/manaos.
 - **Regla de preset** — insinuar, jamás afirmar (no vender lo que no existe).
 - **Slogan Bardera** — `"TE BARDEA. TE BANCA. SE QUEDA."` (no “te quiere”).
-- **Owner Console UI** — reutilizar contratos `/v1/usuario` `/v1/root` `/v1/compare` cuando haga falta.
+- **Owner Console UI** — reutilizar contratos `/v1/usuario` `/v1/root` `/v1/compare` (API ya en prod).
 
 ---
 

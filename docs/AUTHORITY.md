@@ -23,9 +23,9 @@ Si SPECT, ADRs, DECISION_REGISTER, handoffs o el `RIOTQUEENS_MIGRATION_VPS.md` v
 - Salida LLM = no confiable. Identidad, fallback y continuidad de cada Queen son server-owned.
 - No nombrar el modelo técnico al usuario; lenguaje humanizado (Pickle §4).
 - No agregar infraestructura por anticipado. GPU gated por Owner (Pickle §1–§3).
-- Push recién tras auditoría del corte final (Pickle §7).
 - Interfaz y copy público en español natural; código e identificadores en inglés.
-
+- **Owner Console** (`/v1/usuario`, `/v1/root`, `/v1/compare`): fail-closed por allowlist (`RIOTQUEENS_OWNER_AUTH0_SUBJECTS` en prod / `RIOTQUEENS_OWNER_USER_IDS` con auth off). El cartel crudo de OpenRouter **solo** en `/root` (y en `errors.root` de `/compare`). El chat público `/v1/chat` nunca expone `upstream` ni bloque `owner`.
+- Push a `origin` solo con pedido explícito del Owner; no incluir `.env` / `runtime.env` / secretos.
 ## Qué no entra al HEAD limpio
 
 Todo lo que no figure en Pickle §6 y no nombre el corte activo de `MIGRATION.md` → trash externo, no “por si acaso”.

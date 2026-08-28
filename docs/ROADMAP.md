@@ -15,7 +15,9 @@ Este archivo no duplica el Pickle. Si el texto aquí y el Pickle divergen, **man
 | T2 | Modelo intermedio multimodal; selfies a demanda | Pickle §3 |
 | T3 | Qwen3.8-27B Uncensored en Vast.ai 4090 spot — **gated Owner** | Pickle §3 |
 | Bardera | Retención sin regalar “te quiero”; redirigir sexual explícito a T2/T3 | Pickle §4 |
+| Owner test | Owner Console API (`/usuario` `/root` `/compare`) — **hecho**; UI Owner pendiente | MIGRATION § Owner Console |
 
 ## Ejecución
 
 Los cortes viven en [`MIGRATION.md`](MIGRATION.md). El plan VPS viejo del worktree **no se ejecuta**.
+Prod viva: `https://riotqueens.live` (C5 + Owner Console API).
