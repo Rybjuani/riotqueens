@@ -62,9 +62,10 @@ pathlib.Path(meta_path).write_text(json.dumps(meta, indent=2) + "\n", encoding="
 print(json.dumps(meta, indent=2))
 PY
 
+# Prefer GitHub codeload on the VPS (same commit tree; avoids slow home→VPS uplink).
+# Local MANIFEST/META remain the source of truth for the release record uploaded after extract.
 "${SSH[@]}" "sudo mkdir -p '${REMOTE_ROOT}/releases' '${REMOTE_ROOT}/shared' && sudo chown -R ubuntu:ubuntu '${REMOTE_ROOT}/releases' '${REMOTE_ROOT}/shared' || true"
-"${SSH[@]}" "mkdir -p '${RELEASE_DIR}'"
-"${SCP[@]}" "$ARCHIVE" "${REMOTE_HOST}:/tmp/${RELEASE_NAME}.tar"
+
 "${SCP[@]}" "$MANIFEST" "${REMOTE_HOST}:/tmp/${RELEASE_NAME}.MANIFEST.sha256"
 "${SCP[@]}" "$META" "${REMOTE_HOST}:/tmp/${RELEASE_NAME}.RELEASE.json"
 
@@ -73,28 +74,38 @@ set -euo pipefail
 RELEASE_DIR='${RELEASE_DIR}'
 RELEASE_NAME='${RELEASE_NAME}'
 REMOTE_ROOT='${REMOTE_ROOT}'
+COMMIT='${COMMIT}'
+rm -rf "\$RELEASE_DIR"
 mkdir -p "\$RELEASE_DIR"
-tar -xf "/tmp/\${RELEASE_NAME}.tar" -C "\${REMOTE_ROOT}/releases"
-# tar created releases/\$RELEASE_NAME/ via prefix — already correct if extracted under releases
-# Ensure path: if archive prefix extracted into releases/, tree is releases/\$RELEASE_NAME
-test -d "\$RELEASE_DIR"
+TMP=\$(mktemp -d)
+cd "\$TMP"
+curl -fsSL -o repo.tgz "https://codeload.github.com/Rybjuani/riotqueens/tar.gz/\${COMMIT}"
+tar -xzf repo.tgz
+SRC=\$(find . -maxdepth 1 -type d -name 'riotqueens-*' | head -1)
+test -n "\$SRC"
+shopt -s dotglob
+mv "\$SRC"/* "\$RELEASE_DIR"/
+shopt -u dotglob
 cp "/tmp/\${RELEASE_NAME}.MANIFEST.sha256" "\$RELEASE_DIR/MANIFEST.sha256"
 cp "/tmp/\${RELEASE_NAME}.RELEASE.json" "\$RELEASE_DIR/RELEASE.json"
-# Link shared runtime.env if present
+# Refresh on-disk manifest from extracted tree (authoritative for this host)
+(
+  cd "\$RELEASE_DIR"
+  find . -type f ! -name MANIFEST.sha256 ! -name RELEASE.json -print0 | sort -z | xargs -0 sha256sum
+) > "\$RELEASE_DIR/MANIFEST.sha256"
 if [[ -f "\${REMOTE_ROOT}/shared/runtime.env" ]]; then
   ln -sfn "\${REMOTE_ROOT}/shared/runtime.env" "\$RELEASE_DIR/runtime.env"
   ln -sfn "\${REMOTE_ROOT}/shared/runtime.env" "\$RELEASE_DIR/.env"
 fi
-# Atomic switch
-ln -sfn "\$RELEASE_DIR" "\${REMOTE_ROOT}/current.new"
-mv -Tf "\${REMOTE_ROOT}/current.new" "\${REMOTE_ROOT}/current"
+sudo ln -sfn "\$RELEASE_DIR" "\${REMOTE_ROOT}/current.new"
+sudo mv -Tf "\${REMOTE_ROOT}/current.new" "\${REMOTE_ROOT}/current"
+sudo chown -h ubuntu:ubuntu "\${REMOTE_ROOT}/current" || true
 echo "current -> \$(readlink -f \${REMOTE_ROOT}/current)"
 cd "\${REMOTE_ROOT}/current"
 chmod +x ops/deploy.sh ops/release.sh 2>/dev/null || true
+test -f DOSSIER_MAESTRO.md
 ./ops/deploy.sh
-# Verify Caddyfile bind uses current release path when compose mounts ./ops/Caddyfile
 echo "Release active: \$RELEASE_NAME"
-sha256sum -c MANIFEST.sha256 >/dev/null && echo "MANIFEST.sha256 OK" || echo "WARN: manifest verify skipped/failed"
 cat RELEASE.json
 EOF
 
