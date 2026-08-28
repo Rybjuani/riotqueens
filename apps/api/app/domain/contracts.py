@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Annotated, Any
 
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
 
 ScopeIdentifier = Annotated[
     str,
@@ -55,6 +55,7 @@ class ModelResponse(BaseModel):
     usage: Usage = Field(default_factory=Usage)
     latency_ms: int = 0
     retry_count: int = 0
+    finish_reason: str | None = None
 
 
 class ChatRequest(BaseModel):
@@ -71,6 +72,56 @@ class ChatAssistantResponse(BaseModel):
 
 class ChatResponse(BaseModel):
     response: ChatAssistantResponse
+
+
+class RootSystemMode(StrEnum):
+    BARDERA = "bardera"
+    EMPTY = "empty"
+    CUSTOM = "custom"
+
+
+class OwnerConsoleChatRequest(BaseModel):
+    """Shared body for /v1/usuario/chat, /v1/root/chat, /v1/compare."""
+
+    model_config = ConfigDict(extra="forbid")
+    user_id: ScopeIdentifier | None = None
+    character_id: QueenIdentifier
+    conversation_id: ScopeIdentifier
+    message: str = Field(min_length=1, max_length=4_000)
+    system: RootSystemMode = RootSystemMode.EMPTY
+    custom_system: str | None = Field(default=None, min_length=1, max_length=20_000)
+    persist: bool = False
+    max_tokens: int | None = Field(default=None, ge=1, le=8_192)
+    temperature: float | None = Field(default=None, ge=0.0, le=2.0)
+    frequency_penalty: float | None = Field(default=None, ge=-2.0, le=2.0)
+    model: str | None = Field(default=None, min_length=1, max_length=256)
+
+    @model_validator(mode="after")
+    def _custom_system_required(self) -> "OwnerConsoleChatRequest":
+        if self.system == RootSystemMode.CUSTOM and not self.custom_system:
+            raise ValueError("custom_system is required when system=custom")
+        if self.system != RootSystemMode.CUSTOM and self.custom_system:
+            raise ValueError("custom_system is only allowed when system=custom")
+        return self
+
+
+class OwnerChatResponse(BaseModel):
+    response: ChatAssistantResponse
+    owner: dict[str, Any]
+
+
+class CompareSideResult(BaseModel):
+    content: str | None = None
+    owner: dict[str, Any] | None = None
+
+
+class CompareResponse(BaseModel):
+    usuario: CompareSideResult
+    root: CompareSideResult
+    diff: dict[str, Any]
+    errors: dict[str, Any | None] = Field(
+        default_factory=lambda: {"usuario": None, "root": None}
+    )
 
 
 class ConversationMessageView(BaseModel):

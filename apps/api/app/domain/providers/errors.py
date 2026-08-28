@@ -1,14 +1,16 @@
-"""Typed, sanitized model-provider errors.
+"""Typed model-provider errors.
 
 Provider adapters raise these errors instead of converting transport/upstream
 failures into successful-looking ModelResponse objects. The router owns retry
 policy and the FastAPI layer owns HTTP mapping.
 
-Errors intentionally carry only stable safe codes/messages. Never attach raw
-upstream bodies, URLs, headers, credentials, or stack details.
+Public chat handlers must only expose ``code`` / ``safe_message``.
+Owner Console root may attach a truncated ``upstream`` cartel for diagnosis.
 """
 
 from __future__ import annotations
+
+from typing import Any
 
 
 class ProviderError(Exception):
@@ -16,8 +18,9 @@ class ProviderError(Exception):
     safe_message = "Model provider error."
     retryable = False
 
-    def __init__(self) -> None:
+    def __init__(self, *, upstream: dict[str, Any] | None = None) -> None:
         super().__init__(self.code)
+        self.upstream = upstream
 
     def __str__(self) -> str:
         return self.code
@@ -70,3 +73,22 @@ class ProviderContentBlockedError(ProviderNonRetryableError):
 
     code = "provider_content_blocked"
     safe_message = "Model provider withheld the response."
+
+
+class ProviderUpstreamError(ProviderNonRetryableError):
+    """Owner Console root: honest upstream failure with raw cartel attached."""
+
+    code = "upstream_error"
+    safe_message = "Upstream model provider returned an error."
+
+    def __init__(
+        self,
+        *,
+        message: str | None = None,
+        upstream: dict[str, Any] | None = None,
+        blocked: bool = False,
+    ) -> None:
+        super().__init__(upstream=upstream)
+        if message:
+            self.safe_message = message
+        self.blocked = blocked

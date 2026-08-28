@@ -144,6 +144,30 @@ Vast.ai RTX 4090 spot + modelo T3 del Pickle §3. No arrancar sin tope de gasto 
 
 ---
 
+## Owner Console (API) — test Euryale crudo
+
+Endpoints Owner-only (chat público `/v1/chat` intacto):
+
+| Path | Qué hace |
+|---|---|
+| `POST /v1/usuario/chat` | Pipeline prod + telemetría `owner` |
+| `POST /v1/root/chat` | Sin dossier por defecto (`system=empty\|bardera\|custom`); sin fallback/anti-leak/rewrite; cartel crudo OpenRouter en error |
+| `POST /v1/compare` | Mismo input → usuario+root + `diff`; no persiste |
+
+Gate fail-closed: `RIOTQUEENS_OWNER_AUTH0_SUBJECTS` (prod) / `RIOTQUEENS_OWNER_USER_IDS` (auth off). Sin UI todavía.
+
+Smoke local (auth off):
+
+```bash
+# RIOTQUEENS_AUTH_ENABLED=false RIOTQUEENS_OWNER_USER_IDS=smoke
+curl -s localhost:8000/v1/root/chat -H 'content-type: application/json' \
+  -d '{"character_id":"bardera","conversation_id":"root1","user_id":"smoke","message":"hola","system":"empty"}'
+curl -s localhost:8000/v1/compare -H 'content-type: application/json' \
+  -d '{"character_id":"bardera","conversation_id":"root1","user_id":"smoke","message":"hola","system":"empty"}'
+```
+
+---
+
 ## Pendiente próximo agente
 
 - **Rotación de claves** — la hace el Owner al final; no tocar secretos ahora.
@@ -152,6 +176,7 @@ Vast.ai RTX 4090 spot + modelo T3 del Pickle §3. No arrancar sin tope de gasto 
 - **Polish legal (textos públicos)** — reemplazar alcohol/droga por naranju/manaos.
 - **Regla de preset** — insinuar, jamás afirmar (no vender lo que no existe).
 - **Slogan Bardera** — `"TE BARDEA. TE BANCA. SE QUEDA."` (no “te quiere”).
+- **Owner Console UI** — reutilizar contratos `/v1/usuario` `/v1/root` `/v1/compare` cuando haga falta.
 
 ---
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -24,6 +24,7 @@ from .domain.contracts import (
     ChatAssistantResponse,
     ChatRequest,
     ChatResponse,
+    CompareResponse,
     ConsentAcceptRequest,
     ConsentAcceptResponse,
     ConsentStatusResponse,
@@ -31,6 +32,8 @@ from .domain.contracts import (
     ConversationMessageView,
     ConversationScopeRequest,
     ConversationSummary,
+    OwnerChatResponse,
+    OwnerConsoleChatRequest,
     QueenIdentifier,
     ScopeIdentifier,
 )
@@ -44,6 +47,8 @@ from .domain.identity import (
     auth_is_required,
     require_principal,
 )
+from .domain.owner import owner_console_configured, require_owner
+from .domain.owner_console import run_compare, run_root_turn, run_usuario_turn
 from .domain.providers.errors import (
     ProviderAuthError,
     ProviderConnectError,
@@ -54,6 +59,7 @@ from .domain.providers.errors import (
     ProviderRequestError,
     ProviderServerError,
     ProviderTimeoutError,
+    ProviderUpstreamError,
 )
 from .domain.queens import is_registered_queen
 from .domain.router import build_router, runtime_status
@@ -177,20 +183,38 @@ _PROVIDER_HTTP_STATUS: dict[type[ProviderError], int] = {
     ProviderAuthError: 503,
     ProviderRequestError: 503,
     ProviderContentBlockedError: 502,
+    ProviderUpstreamError: 502,
 }
+
+
+def _provider_http_status(exc: ProviderError) -> int:
+    for error_type, mapped_status in _PROVIDER_HTTP_STATUS.items():
+        if isinstance(exc, error_type):
+            return mapped_status
+    return 503
 
 
 @app.exception_handler(ProviderError)
 async def provider_error_handler(_request: Request, exc: ProviderError) -> JSONResponse:
-    status_code = 503
-    for error_type, mapped_status in _PROVIDER_HTTP_STATUS.items():
-        if isinstance(exc, error_type):
-            status_code = mapped_status
-            break
+    """Public mapping: never attach upstream cartels here."""
     return JSONResponse(
-        status_code=status_code,
+        status_code=_provider_http_status(exc),
         content={"detail": {"code": exc.code, "message": exc.safe_message}},
     )
+
+
+def _owner_provider_error_response(exc: ProviderError) -> JSONResponse:
+    """Owner Console mapping: include owner trace + root upstream cartel when present."""
+    failure = getattr(exc, "owner_failure", None)
+    if failure is not None:
+        return JSONResponse(
+            status_code=_provider_http_status(exc),
+            content={"detail": failure.detail},
+        )
+    detail: dict[str, Any] = {"code": exc.code, "message": exc.safe_message}
+    if isinstance(exc, ProviderUpstreamError) and exc.upstream is not None:
+        detail["upstream"] = exc.upstream
+    return JSONResponse(status_code=_provider_http_status(exc), content={"detail": detail})
 
 
 @app.get("/health")
@@ -201,7 +225,11 @@ async def health() -> dict[str, str]:
 @app.get("/v1/runtime/status")
 async def get_runtime_status() -> dict[str, object]:
     base = runtime_status(router)
-    return {**base, "conversation_max_turns": conversation_store.max_turns}
+    return {
+        **base,
+        "conversation_max_turns": conversation_store.max_turns,
+        "owner_console_configured": owner_console_configured(),
+    }
 
 
 @app.post("/v1/chat", response_model=ChatResponse)
@@ -252,6 +280,73 @@ async def chat(
             raise
 
     return ChatResponse(response=ChatAssistantResponse(content=response.content))
+
+
+@app.post("/v1/usuario/chat", response_model=OwnerChatResponse)
+async def usuario_chat(
+    payload: OwnerConsoleChatRequest,
+    request: Request,
+) -> OwnerChatResponse | JSONResponse:
+    """Owner Console: production pipeline + telemetry. Public /v1/chat stays unchanged."""
+    owner = await require_owner(request, body_user_id=payload.user_id)
+    _require_registered_queen(payload.character_id)
+    _require_current_acceptance(owner.principal)
+    try:
+        result = await run_usuario_turn(
+            router=router,
+            conversation_store=conversation_store,
+            user_id=owner.user_id,
+            payload=payload.model_copy(update={"persist": True}),
+            persist=True,
+        )
+    except ProviderError as exc:
+        return _owner_provider_error_response(exc)
+    return OwnerChatResponse(
+        response=ChatAssistantResponse(content=result.content),
+        owner=result.trace.to_dict(),
+    )
+
+
+@app.post("/v1/root/chat", response_model=OwnerChatResponse)
+async def root_chat(
+    payload: OwnerConsoleChatRequest,
+    request: Request,
+) -> OwnerChatResponse | JSONResponse:
+    """Owner Console: raw Euryale — no dossier by default, upstream cartel on failure."""
+    owner = await require_owner(request, body_user_id=payload.user_id)
+    _require_registered_queen(payload.character_id)
+    _require_current_acceptance(owner.principal)
+    try:
+        result = await run_root_turn(
+            router=router,
+            conversation_store=conversation_store,
+            user_id=owner.user_id,
+            payload=payload,
+        )
+    except ProviderError as exc:
+        return _owner_provider_error_response(exc)
+    return OwnerChatResponse(
+        response=ChatAssistantResponse(content=result.content),
+        owner=result.trace.to_dict(),
+    )
+
+
+@app.post("/v1/compare", response_model=CompareResponse)
+async def compare_chat(
+    payload: OwnerConsoleChatRequest,
+    request: Request,
+) -> CompareResponse:
+    """Owner Console: same input → usuario + root side-by-side. Does not persist."""
+    owner = await require_owner(request, body_user_id=payload.user_id)
+    _require_registered_queen(payload.character_id)
+    _require_current_acceptance(owner.principal)
+    result = await run_compare(
+        router=router,
+        conversation_store=conversation_store,
+        user_id=owner.user_id,
+        payload=payload,
+    )
+    return CompareResponse.model_validate(result)
 
 
 @app.get("/v1/conversations/{conversation_id}", response_model=ConversationSummary)
