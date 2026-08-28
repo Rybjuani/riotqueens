@@ -1,23 +1,23 @@
 # RiotQueens — ROADMAP
 
-**Autoridad única de roadmap:** [`../RIOTQUEENS_BIGPICKLE.md`](../RIOTQUEENS_BIGPICKLE.md)
+**Autoridad operacional:** [`../AGENTS.md`](../AGENTS.md)  
+**Persona / casting:** [`../DOSSIER_MAESTRO.md`](../DOSSIER_MAESTRO.md)
 
-Este archivo no duplica el Pickle. Si el texto aquí y el Pickle divergen, **manda el Pickle**.
+Este archivo es un puntero. Si diverge de `AGENTS.md`, **manda `AGENTS.md`**.
 
-## Resumen operativo (no sustituye al Pickle)
+## Resumen operativo
 
 | Prioridad | Qué | Fuente |
 |---|---|---|
-| 1º | Cerrar Vast.ai + Auth0 (pendiente = burn) | Pickle §2 |
-| 2º | Repo clean + docs 3 archivos + stack usable | Pickle §6 + este MIGRATION |
-| 3º | Pulir HTML + assets que ya están | Pickle §2 |
-| T1 | Euryale 70B vía OpenRouter; caps max_tokens 180–220, temp 0.85–0.95 | Pickle §3 |
-| T2 | Modelo intermedio multimodal; selfies a demanda | Pickle §3 |
-| T3 | Qwen3.8-27B Uncensored en Vast.ai 4090 spot — **gated Owner** | Pickle §3 |
-| Bardera | Retención sin regalar “te quiero”; redirigir sexual explícito a T2/T3 | Pickle §4 |
-| Owner test | Owner Console API (`/usuario` `/root` `/compare`) — **hecho**; UI Owner pendiente | MIGRATION § Owner Console |
+| 1º | Cerrar Vast.ai + Auth0 (pendiente = burn) | AGENTS.md |
+| 2º | LEY 0: LOCAL == GITHUB == VPS vía `ops/release.sh` | AGENTS.md §8 |
+| T1 | Euryale 70B vía OpenRouter; `max_tokens` band 180–220 (valor actual 200) | AGENTS.md §3 |
+| T2 | Multimodal — **no inventar nombre de modelo** | AGENTS.md §3 |
+| T3 | Qwen3.8-27B Uncensored en Vast.ai 4090 spot — **gated Owner** | AGENTS.md §3 |
+| Bardera | Dossier Maestro completo; “te quiero” rareza contextual Nivel 1 | DOSSIER_MAESTRO.md |
+| Owner | Console en loopback + SSH tunnel (no Caddy público) | AGENTS.md §5–§6 |
 
 ## Ejecución
 
-Los cortes viven en [`MIGRATION.md`](MIGRATION.md). El plan VPS viejo del worktree **no se ejecuta**.
-Prod viva: `https://riotqueens.live` (C5 + Owner Console API).
+Cortes históricos: [`MIGRATION.md`](MIGRATION.md) (evidencia de plan; no reabre decisiones).  
+Prod: `https://riotqueens.live`.

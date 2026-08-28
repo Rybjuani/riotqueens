@@ -30,7 +30,8 @@ class Route(StrEnum):
 
 class MessageInput(BaseModel):
     role: str = Field(pattern="^(system|user|assistant)$")
-    content: str = Field(min_length=1, max_length=20_000)
+    # System may carry the full DOSSIER_MAESTRO.md (Owner: load complete dossier).
+    content: str = Field(min_length=1, max_length=200_000)
 
 
 class ModelRequest(BaseModel):
@@ -89,7 +90,7 @@ class OwnerConsoleChatRequest(BaseModel):
     conversation_id: ScopeIdentifier
     message: str = Field(min_length=1, max_length=4_000)
     system: RootSystemMode = RootSystemMode.EMPTY
-    custom_system: str | None = Field(default=None, min_length=1, max_length=20_000)
+    custom_system: str | None = Field(default=None, min_length=1, max_length=200_000)
     persist: bool = False
     max_tokens: int | None = Field(default=None, ge=1, le=8_192)
     temperature: float | None = Field(default=None, ge=0.0, le=2.0)

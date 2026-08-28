@@ -23,14 +23,15 @@ def test_clamp_max_tokens_t1_band() -> None:
     assert clamp_max_tokens(999) == 220
 
 
-def test_preset_loaded_for_bardera() -> None:
+def test_dossier_maestro_loaded_for_bardera() -> None:
     assert is_registered_queen("bardera")
     prompt = get_system_prompt("bardera") or ""
     assert prompt == BARDERA_SYSTEM_PROMPT
     low = prompt.lower()
-    assert "criterio propio" in low
-    assert "sape" in low
-    assert BARDERA_SYSTEM_PROMPT.count("\n") <= 90
+    assert "criterio propio" in low or "criterio" in low
+    assert "bardera" in low
+    # Full dossier — no 80/90-line cape.
+    assert BARDERA_SYSTEM_PROMPT.count("\n") > 90
 
 
 @pytest.mark.asyncio

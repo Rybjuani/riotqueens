@@ -1,6 +1,7 @@
-# RiotQueens — MIGRATION (plan nuevo)
+# RiotQueens — MIGRATION (plan histórico por cortes)
 
-**Autoridad:** [`../RIOTQUEENS_BIGPICKLE.md`](../RIOTQUEENS_BIGPICKLE.md) · [`AUTHORITY.md`](AUTHORITY.md)  
+**Autoridad vigente:** [`../AGENTS.md`](../AGENTS.md) · [`../DOSSIER_MAESTRO.md`](../DOSSIER_MAESTRO.md)  
+**Este archivo:** evidencia de cortes ejecutados; **no** reabre decisiones cerradas.  
 **Destino:** repo clean `https://github.com/Rybjuani/riotqueens`  
 **Cantera (solo lectura):** `/home/rybjuani/Escritorio/RiotQueens-worktree`  
 **No ejecutar:** `RIOTQUEENS_MIGRATION_VPS.md` del repo viejo (referencia histórica).
@@ -8,10 +9,10 @@
 ## Reglas del ejecutor
 
 1. Cortes **en orden**. Cada uno cierra con verificación.
-2. No inventar producto, modelo ni infra. Bloqueo → Owner (Pickle §7).
+2. No inventar producto, modelo ni infra. Bloqueo → Owner (`AGENTS.md`).
 3. Secretos fuera de Git. `runtime.env` por scp con modo `600`.
-4. Push **solo en C6**, tras auditoría.
-5. Layout de código: `apps/api` + `apps/web` (reversible; Pickle §6 describe qué pertenece, no obliga rename a `/web` ahora).
+4. Push solo con pedido explícito del Owner.
+5. Layout: `apps/api` + `apps/web`. Persona = `/DOSSIER_MAESTRO.md` completo.
 
 ---
 
@@ -34,7 +35,7 @@
 ```
 Browser → Caddy → web:3000 / api:8000
 api → postgres + OpenRouter (sao10k/l3.3-euryale-70b)
-       max_tokens 180–220 · temp ~0.9 · system = prompts/bardera.preset.md
+       max_tokens 180–220 · temp ~0.9 · system = DOSSIER_MAESTRO.md (completo)
 T3 GPU (Vast/vLLM) = gated Owner; mismo adaptador openai-compatible.
 ```
 

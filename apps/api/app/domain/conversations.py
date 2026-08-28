@@ -16,11 +16,9 @@ Hard scope rules (Issue #5 + auditor fix PR #6)
 3. Only validated assistant content actually returned to the user may be
    stored as an assistant turn. Provider failures (timeout, 429, 5xx,
    auth/config, connect, malformed, empty) MUST NOT append a fake turn.
-4. History is bounded deterministically by `max_turns`
-   (`RIOTQUEENS_CONVERSATION_MAX_TURNS`). The bound is applied to complete
-   user/assistant pairs; truncation never leaves a half-pair. The bound
-   is applied to the STORED RECORD itself (not just the provider context)
-   so in-process state cannot grow without limit.
+4. Full history is retained (durable). `max_turns`
+   (`RIOTQUEENS_CONVERSATION_MAX_TURNS`) selects the context window at
+   read time only (complete user/assistant pairs; never a half-pair).
 5. Concurrent requests MUST NOT corrupt ordering. The in-process
    implementation uses a REENTRANT `asyncio.Lock` per scope key. The
    chat handler acquires the lock for the WHOLE turn lifecycle via
@@ -249,21 +247,13 @@ def _bound_pairs(messages: Sequence[StoredMessage], max_turns: int) -> list[Stor
 
 
 def _prune_record(record: ConversationRecord, max_turns: int) -> None:
-    """Mutate ``record.messages`` in place to keep only the bounded set.
+    """No-op: durable full history; ``max_turns`` applies only at read/context.
 
-    After a successful assistant turn (or after a rollback), this is
-    called to ensure the STORED record itself does not grow without
-    limit. Keeps at most ``max_turns`` complete user/assistant pairs
-    plus an optional trailing in-flight user message.
+    Owner 2026-08-28: historial completo durable + ventana de selección.
+    Kept for call-site compatibility; does not delete or shrink storage.
     """
-    if max_turns < 0:
-        return
-    bounded = _bound_pairs(record.messages, max_turns)
-    # Only mutate if we actually reduced the list (avoid unnecessary
-    # list rebuilds on every turn when under the bound).
-    if len(bounded) < len(record.messages):
-        record.messages = bounded
-        record.updated_at = _utcnow()
+    del record, max_turns
+    return
 
 
 class InProcessConversationStore:
@@ -371,26 +361,20 @@ class InProcessConversationStore:
             rec = self._record_for(scope)
             msg = StoredMessage(id=str(uuid.uuid4()), role="assistant", content=content)
             rec.messages.append(msg)
-            # Prune the STORED record to the bound so in-process state
-            # does not grow without limit (auditor fix PR #6 blocker 2).
+            # Full history is retained; context window is applied in get_history.
             _prune_record(rec, self._max_turns)
             rec.updated_at = _utcnow()
             return msg
 
     async def get_history(self, scope: ConversationScopeKey) -> list[StoredMessage]:
-        """Return the bounded history for a scope.
+        """Return the context-window view of history for a scope.
 
-        The returned list contains at most ``max_turns`` complete
-        user/assistant pairs, plus an optional trailing unpaired user
-        message if a request is currently in flight. The canonical
-        system prompt is NEVER included here — it is re-prepended at
-        request time by `assemble_request` in `context.py`.
-
-        Note: the stored record itself is also pruned to the bound after
-        each successful assistant turn, so this method returns the same
-        bounded view that the store actually holds. The bound is applied
-        here too for defensive consistency (in case the record was
-        mutated by a future code path that forgot to prune).
+        Storage keeps the full durable transcript. The returned list
+        contains at most ``max_turns`` complete user/assistant pairs,
+        plus an optional trailing unpaired user message if a request is
+        currently in flight. The system prompt is NEVER included here —
+        it is re-prepended at request time by `assemble_request` in
+        `context.py`.
         """
         async with self._lock_for(scope):
             rec = self._records.get(scope)
@@ -400,13 +384,10 @@ class InProcessConversationStore:
         return _bound_pairs(snapshot, self._max_turns)
 
     async def get_conversation(self, scope: ConversationScopeKey) -> ConversationRecord | None:
-        """Return a deep-copy snapshot of the stored conversation record.
+        """Return a deep-copy snapshot with context-windowed messages.
 
-        The returned ``messages`` list reflects the BOUNDED stored state
-        (the store prunes after each successful assistant turn). It does
-        NOT contain messages beyond ``max_turns`` complete pairs (plus
-        an optional in-flight trailing user). This is honest: the
-        prototype does not keep full permanent history.
+        Full transcript remains in the store; ``messages`` on the
+        returned record is the bounded window used for model context.
         """
         async with self._lock_for(scope):
             rec = self._records.get(scope)
@@ -481,11 +462,10 @@ class InProcessConversationStore:
     # ------------------------------------------------------------------ #
 
     async def _raw_record(self, scope: ConversationScopeKey) -> ConversationRecord | None:
-        """Return the RAW (unbounded) stored record for testing.
+        """Return the RAW (full durable) stored record for testing.
 
-        Tests use this to verify that the stored state itself is pruned
-        to the bound, not just the provider context. The returned object
-        is a deep copy so tests cannot mutate internal state.
+        Tests use this to verify that storage retains history beyond the
+        context window. The returned object is a deep copy.
         """
         async with self._lock_for(scope):
             rec = self._records.get(scope)
@@ -598,22 +578,9 @@ class PostgresConversationStore:
     async def _prune(
         self, connection: asyncpg.Connection, scope: ConversationScopeKey
     ) -> None:
-        messages = await self._load_messages(connection, scope)
-        bounded = _bound_pairs(messages, self._max_turns)
-        if len(bounded) >= len(messages):
-            return
-        keep_ids = [msg.id for msg in bounded]
-        await connection.execute(
-            """
-            DELETE FROM conversation_messages
-            WHERE user_id = $1 AND character_id = $2 AND conversation_id = $3
-              AND NOT (id = ANY($4::uuid[]))
-            """,
-            scope.user_id,
-            scope.character_id,
-            scope.conversation_id,
-            keep_ids,
-        )
+        """No-op: durable full history in Postgres; window only at read time."""
+        del connection, scope
+        return
 
     async def append_user_message(
         self, scope: ConversationScopeKey, content: str

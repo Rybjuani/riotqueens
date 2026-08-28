@@ -9,8 +9,28 @@ https://riotqueens.live {
     -Server
   }
 
-  # FastAPI only — do NOT swallow Next.js routes like /api/token.
-  handle /api/v1/* {
+  # Owner Console is NOT public (Owner 2026-08-28: loopback + SSH tunnel).
+  # Refuse admin surfaces at the edge even if someone has a token.
+  @owner_console path /api/v1/root/* /api/v1/usuario/* /api/v1/compare /api/v1/compare/*
+  respond @owner_console 404
+
+  # Public FastAPI only — do NOT swallow Next.js routes like /api/token.
+  handle /api/v1/chat* {
+    uri strip_prefix /api
+    reverse_proxy api:8000
+  }
+
+  handle /api/v1/conversations* {
+    uri strip_prefix /api
+    reverse_proxy api:8000
+  }
+
+  handle /api/v1/consent* {
+    uri strip_prefix /api
+    reverse_proxy api:8000
+  }
+
+  handle /api/v1/runtime/* {
     uri strip_prefix /api
     reverse_proxy api:8000
   }

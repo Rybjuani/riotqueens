@@ -61,7 +61,7 @@ def _memory_trace(*, history_messages: int, max_turns: int) -> MemoryTrace:
     if at_cap:
         return MemoryTrace(
             lost=True,
-            detail=f"history at max_turns={max_turns}; older pairs may have been pruned",
+            detail=f"context window at max_turns={max_turns}; older pairs retained in durable store",
         )
     return MemoryTrace(lost=False, detail=None)
 
