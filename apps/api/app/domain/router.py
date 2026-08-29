@@ -18,12 +18,6 @@ from .providers.errors import (
     ProviderTimeoutError,
 )
 
-# Narrow anti-leak only — not a semantic cape / moderation system.
-_PROVIDER_IDENTITY_LEAK = re.compile(
-    r"\b(?:soy|como)\s+(?:gemini|chatgpt|claude|copilot)\b|"
-    r"\b(?:i am|i'm)\s+(?:gemini|chatgpt|claude|copilot|an?\s+ai)\b",
-    re.IGNORECASE,
-)
 _CONTROL_CHARS = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f]")
 
 
@@ -49,11 +43,6 @@ class MockModelProvider:
 
 def _strip_controls(text: str) -> str:
     return _CONTROL_CHARS.sub("", text).strip()
-
-
-def _reject_provider_identity_leak(text: str) -> None:
-    if _PROVIDER_IDENTITY_LEAK.search(text):
-        raise ProviderContentBlockedError()
 
 
 class ModelRouter:
@@ -125,12 +114,6 @@ class ModelRouter:
                     if retry < self.max_retries:
                         continue
                     break
-                try:
-                    _reject_provider_identity_leak(content)
-                except ProviderContentBlockedError as error:
-                    last_error = error
-                    break
-
                 response.content = content
                 response.retry_count = attempts - 1
                 response.latency_ms = round((perf_counter() - started) * 1000)
