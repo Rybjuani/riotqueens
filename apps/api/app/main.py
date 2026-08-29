@@ -129,6 +129,11 @@ class NoStoreV1Middleware:
 
 _cors_env = os.environ.get("RIOTQUEENS_CORS_ORIGINS", "http://localhost:3000")
 _cors_origins = [origin.strip() for origin in _cors_env.split(",") if origin.strip()]
+# The administrative API itself is bound to host loopback. These origins allow
+# the private web UI reached through the paired SSH tunnel, not the public site.
+for _owner_console_origin in ("http://127.0.0.1:3000", "http://localhost:3000"):
+    if _owner_console_origin not in _cors_origins:
+        _cors_origins.append(_owner_console_origin)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,

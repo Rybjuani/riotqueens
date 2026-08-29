@@ -216,7 +216,7 @@ curl -s https://riotqueens.live/api/v1/root/chat \
   -d '{"character_id":"bardera","conversation_id":"root1","message":"hola","system":"empty"}'
 ```
 
-**Cierre Owner Console API:** endpoints + gate + deploy VPS + docs. UI Owner = pendiente.
+**Cierre Owner Console:** endpoints + gate + UI privada + deploy VPS + docs. La UI abre sólo por los puertos loopback `3000` y `8000` tunelizados; Caddy devuelve 404 para `/owner` y los endpoints Owner.
 
 ---
 
@@ -228,7 +228,6 @@ curl -s https://riotqueens.live/api/v1/root/chat \
 - **Polish legal (textos públicos)** — reemplazar alcohol/droga por naranju/manaos.
 - **Regla de preset** — insinuar, jamás afirmar (no vender lo que no existe).
 - **Slogan Bardera** — `"TE BARDEA. TE BANCA. SE QUEDA."` (no “te quiere”).
-- **Owner Console UI** — reutilizar contratos `/v1/usuario` `/v1/root` `/v1/compare` (API ya en prod).
 
 ---
 

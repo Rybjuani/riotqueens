@@ -25,7 +25,7 @@ Forense sin autoridad: [`_trash_scratch/`](_trash_scratch/).
 | Canal | Paths | Quién / cómo |
 |---|---|---|
 | Público | `POST /v1/chat`, consent, conversations | usuarios Auth0 + clickwrap; Caddy `/api/v1/...` |
-| Owner | `POST /v1/usuario/chat`, `/v1/root/chat`, `/v1/compare` | allowlist; **no** expuesto por Caddy; `ssh -L 8000:127.0.0.1:8000 ubuntu@VPS` |
+| Owner | `/owner` + `POST /v1/usuario/chat`, `/v1/root/chat`, `/v1/compare` | allowlist; **no** expuesto por Caddy; UI y API sólo por túnel SSH |
 
 Detalle operacional: [`AGENTS.md`](AGENTS.md).
 
@@ -37,7 +37,7 @@ docker compose up --build
 ```
 
 Owner Console local: API en `127.0.0.1:8000`. Setear `RIOTQUEENS_OWNER_USER_IDS` con auth off.  
-Prod: `RIOTQUEENS_OWNER_AUTH0_SUBJECTS` solo en `shared/runtime.env` (modo `600`).
+Producción: abrir una vez el túnel `ssh -i ~/.ssh/luxriot_vps -N -L 3000:127.0.0.1:3000 -L 8000:127.0.0.1:8000 ubuntu@148.113.167.121`, luego visitar `http://127.0.0.1:3000/owner`. La UI guarda el bearer Auth0 únicamente durante esa pestaña. `RIOTQUEENS_OWNER_AUTH0_SUBJECTS` vive sólo en `shared/runtime.env` (modo `600`).
 
 ## Release (LEY 0)
 

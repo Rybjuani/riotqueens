@@ -91,6 +91,10 @@ services:
       AUTH0_SCOPE: ${AUTH0_SCOPE:-openid profile email}
     expose:
       - "3000"
+    # Owner Console UI via SSH tunnel: ssh -L 3000:127.0.0.1:3000 ...
+    # Caddy denies /owner on the public hostname; this bind is the only remote path.
+    ports:
+      - "127.0.0.1:3000:3000"
     depends_on:
       api:
         condition: service_healthy

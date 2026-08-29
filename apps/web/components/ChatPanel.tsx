@@ -6,6 +6,7 @@ import {
   clearConversation,
   getConversation,
   sendChat,
+  ChatApiError,
   type ChatMessage,
   type ConversationSummary,
 } from "@/lib/api";
@@ -89,12 +90,16 @@ export function ChatPanel() {
         setConversationReady(false);
         setError("La respuesta llegó, pero no se pudo confirmar el hilo. Reintentá.");
       }
-    } catch {
+    } catch (error) {
       try {
         const summary = await getConversation({ character_id: bardera.id });
         setMessages(summary.messages.map(({ role, content: storedContent }) => ({ role, content: storedContent })));
         setConversationReady(true);
-        setError("No se pudo confirmar el envío. El hilo se sincronizó.");
+        setError(
+          error instanceof ChatApiError && error.status >= 500
+            ? "Bardera está sin respuesta temporalmente desde su proveedor. El hilo se sincronizó."
+            : "No se pudo confirmar el envío. El hilo se sincronizó.",
+        );
       } catch {
         setMessages(previousMessages);
         setConversationReady(false);

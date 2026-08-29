@@ -31,6 +31,13 @@ export interface ChatResponse {
   };
 }
 
+export class ChatApiError extends Error {
+  constructor(readonly status: number, statusText: string) {
+    super(`Chat API error: ${status} ${statusText}`);
+    this.name = "ChatApiError";
+  }
+}
+
 export interface ConsentStatus {
   accepted: boolean;
   required_age_gate_version: string;
@@ -79,7 +86,7 @@ export async function sendChat(
   });
 
   if (!res.ok) {
-    throw new Error(`Chat API error: ${res.status} ${res.statusText}`);
+    throw new ChatApiError(res.status, res.statusText);
   }
 
   return (await res.json()) as ChatResponse;

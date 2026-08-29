@@ -54,6 +54,23 @@ def test_owner_gate_fail_closed_without_allowlist(monkeypatch: pytest.MonkeyPatc
     assert res.json()["detail"]["code"] == "owner_forbidden"
 
 
+def test_owner_console_accepts_private_loopback_web_origin(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The tunnelled UI is allowed without widening the public Caddy surface."""
+    monkeypatch.setenv("RIOTQUEENS_CORS_ORIGINS", "https://riotqueens.live")
+    main_mod = _reload_main(monkeypatch)
+    client = TestClient(main_mod.app)
+    res = client.request(
+        "OPTIONS",
+        "/v1/root/chat",
+        headers={
+            "Origin": "http://127.0.0.1:3000",
+            "Access-Control-Request-Method": "POST",
+        },
+    )
+    assert res.status_code == 200
+    assert res.headers["access-control-allow-origin"] == "http://127.0.0.1:3000"
+
+
 def test_owner_gate_rejects_unknown_user(monkeypatch: pytest.MonkeyPatch) -> None:
     main_mod = _reload_main(monkeypatch, RIOTQUEENS_OWNER_USER_IDS="smoke")
     client = TestClient(main_mod.app)

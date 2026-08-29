@@ -65,6 +65,235 @@ img {
   max-width: 100%;
 }
 
+/* OWNER CONSOLE — served only through loopback web/API tunnels. */
+.owner-console {
+  width: min(1540px, 100%);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 28px;
+}
+
+.owner-console__header,
+.owner-console__controls,
+.owner-console__mode,
+.owner-console__grid {
+  border: 1px solid #303036;
+}
+
+.owner-console__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+  padding: 22px;
+  border-bottom: 3px solid var(--magenta);
+}
+
+.owner-console__header h1 {
+  font-size: clamp(30px, 5vw, 66px);
+}
+
+.owner-console__status {
+  color: var(--cyan);
+  font-size: 12px;
+}
+
+.owner-console__notice {
+  padding: 14px 22px;
+  color: var(--plata);
+  background: #131318;
+  border-inline: 1px solid #303036;
+  border-bottom: 1px solid #303036;
+  font-size: 13px;
+}
+
+.owner-console__controls {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) auto auto;
+  gap: 12px;
+  align-items: end;
+  padding: 16px 22px;
+  margin-top: 18px;
+}
+
+.owner-console label,
+.owner-console__system {
+  display: grid;
+  gap: 6px;
+  color: var(--plata);
+  font-size: 12px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.owner-console input,
+.owner-console textarea,
+.owner-console select {
+  width: 100%;
+  border: 1px solid #555;
+  padding: 10px 12px;
+  color: var(--bone);
+  background: #0c0c10;
+  font: inherit;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.owner-console__mode {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 22px;
+  border-top: 0;
+}
+
+.owner-console__mode > button {
+  border: 1px solid #555;
+  padding: 8px 12px;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+}
+
+.owner-console__mode > button.owner-console__mode-active {
+  border-color: var(--cyan);
+  color: var(--negro);
+  background: var(--cyan);
+}
+
+.owner-console__mode p {
+  flex: 1 1 300px;
+  color: var(--plata);
+  font-size: 13px;
+}
+
+.owner-console__system {
+  margin-left: auto;
+}
+
+.owner-console__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(330px, 0.8fr);
+  min-height: 620px;
+  margin-top: 18px;
+}
+
+.owner-console__chat {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  border-right: 1px solid #303036;
+}
+
+.owner-console__thread {
+  flex: 1;
+  padding: 22px;
+  overflow: auto;
+}
+
+.owner-console__message {
+  margin-bottom: 16px;
+  padding: 12px;
+  border-left: 3px solid var(--magenta);
+  background: #141419;
+}
+
+.owner-console__message:nth-child(3n + 2) {
+  border-left-color: var(--cyan);
+}
+
+.owner-console__message span,
+.owner-console__sending {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--cyan);
+  font-size: 11px;
+  letter-spacing: 0.13em;
+}
+
+.owner-console__message p {
+  white-space: pre-wrap;
+}
+
+.owner-console__composer {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  padding: 16px 22px;
+  border-top: 1px solid #303036;
+}
+
+.owner-console__composer textarea {
+  min-height: 76px;
+  resize: vertical;
+}
+
+.owner-console__trace {
+  padding: 22px;
+  overflow: auto;
+  background: #0d0d11;
+}
+
+.owner-console__trace h2 {
+  font-size: 24px;
+  color: var(--magenta);
+}
+
+.owner-console__trace > p {
+  margin: 8px 0 18px;
+  color: var(--plata);
+  font-size: 13px;
+}
+
+.owner-console__trace pre {
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid #35353d;
+  color: #b9f9ff;
+  background: #070708;
+  font: 12px/1.5 var(--mono);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.owner-console__error h3 {
+  margin: 14px 0 6px;
+  color: var(--rosa);
+  font-size: 18px;
+}
+
+.owner-console__error pre {
+  color: #ffb2cb;
+  border-color: var(--rosa);
+}
+
+@media (max-width: 800px) {
+  .owner-console {
+    padding: 12px;
+  }
+
+  .owner-console__header,
+  .owner-console__controls,
+  .owner-console__grid,
+  .owner-console__composer {
+    grid-template-columns: 1fr;
+  }
+
+  .owner-console__header {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .owner-console__chat {
+    border-right: 0;
+    border-bottom: 1px solid #303036;
+  }
+
+  .owner-console__system {
+    margin-left: 0;
+  }
+}
+
 .wrap {
   max-width: 1200px;
   margin: 0 auto;
