@@ -146,7 +146,7 @@ Referencia de capacidad spot (a validar contra la cuantización/contexto elegido
 ### 3.4 Transición cloud y memoria
 
 - El T0 cloud actual es un puente, no el estado final de voz. Si un provider externo produce refusals incompatibles o rompe coherencia/memoria, no se parchea el adaptador ni se deforma a Bardera: se migra a ejecución unrestricted self-hosted cuando el Owner habilite la infraestructura.
-- La migración self-hosted continúa gated por el Owner; Vast.ai/T3 queda para el final según la decisión de producto vigente.
+- P1 (Owner Investigation, 2026-08-29) desbloquea la preparación fullstack de T1/T2/T3. La contratación y el gasto de la instancia Vast.ai RTX 4090 spot siguen siendo acción exclusiva del Owner; el cutover T3 queda para el final.
 
 ---
 
@@ -157,6 +157,7 @@ Referencia de capacidad spot (a validar contra la cuantización/contexto elegido
 3. `/README.md` — mapa técnico no autoritativo.
 4. `/_trash_scratch/` — forense, sin autoridad.
 5. `prompts/bardera.preset.md` — **forense / no autoritativo** para reconstrucción; runtime carga el Dossier Maestro completo.
+6. `/Riotqueens-Ai-Landing-Mock.html` — referencia visual canónica versionada. Guía el ADN de la readaptación (negro, magenta, cyan, display punk/editorial, labels técnicos, energía y slogans); no se copia literalmente ni sustituye las decisiones activas de tiers, precios, capacidad o copy.
 
 ---
 
@@ -170,6 +171,8 @@ Referencia de capacidad spot (a validar contra la cuantización/contexto elegido
 | 4 | Control plane privado | **Loopback `127.0.0.1` + túnel SSH** para endpoints Owner (`/v1/root`, y superficie admin asociada) |
 | 5 | Memoria / continuidad | **Historial completo durable + ventana de selección de contexto** |
 | 6 | `max_tokens` | **Mantener valor actual del runtime** |
+| 7 | P1 — Owner Investigation | **Cerrado / decidido (2026-08-29):** preparar estructura fullstack T1/T2/T3; T3 = `orcarouter/Qwen3.8-27B-Uncensored-FP8`; provider final = Vast.ai RTX 4090 spot contratada por Owner |
+| 8 | Identidad visual | **`Riotqueens-Ai-Landing-Mock.html` manda como ADN visual.** Readaptar la web actual sin romper su estructura útil; conservar slogans, sumar los faltantes y mantener coherencia de léxico, modismos, manifiestos, colores y estilo |
 
 ---
 
@@ -194,6 +197,12 @@ Referencia de capacidad spot (a validar contra la cuantización/contexto elegido
 4. Push a `origin` solo con pedido explícito del Owner.
 5. Deploy a VPS solo con pedido explícito, vía procedimiento §8.
 6. Si duda: no inventar; escalar al Owner.
+
+### 7.1 Alcance autorizado por P1
+
+- Codex puede preparar ahora los contratos y la estructura fullstack para T1/T2/T3: resolución de tier server-owned, configuración de provider/modelo sin secretos, ventanas de contexto/memoria por tier y entrega de assets autorizados por backend.
+- No hardcodear ni activar un modelo T1/T2 hasta que el Owner lo nombre. No contratar, encender ni facturar GPU: Vast.ai RTX 4090 spot la contrata el Owner cuando corresponda.
+- La readaptación visual parte del mock canónico. Se preserva la arquitectura funcional existente (auth, consentimiento, chat, continuidad y superficies privadas), y se pule su presentación y copy sin degradar esas funciones.
 
 Interfaz y copy público en español natural; código e identificadores en inglés.
 

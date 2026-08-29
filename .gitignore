@@ -44,6 +44,7 @@ BACKUP_*.md
 ASSET_MANIFEST_*.csv
 README.txt
 *.html
+!Riotqueens-Ai-Landing-Mock.html
 !docs/reference/visual/*.html
 !docs/reference/audits/Qwen_html.html
 
