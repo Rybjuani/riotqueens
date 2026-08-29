@@ -54,7 +54,7 @@ def _env_int(name: str, default: int) -> int:
 
 
 def clamp_max_tokens(value: int) -> int:
-    """Pickle §3 T1 cap: max_tokens 180–220."""
+    """Current preview response limit: max_tokens 180–220."""
     return max(180, min(220, value))
 
 

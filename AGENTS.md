@@ -88,10 +88,12 @@ No duplicar tablas de modelos dentro del dossier de personalidad. Fuente operaci
 
 | Tier | Estado | Notas |
 |---|---|---|
-| **T1 preview** | `sao10k/l3.3-euryale-70b` vía OpenRouter | Gratis/barato; límite diario |
-| **T2** | Propiedades definidas; **nombre de modelo no inventar** | Multimodal / selfies a demanda pagos — solo si Owner nombra el modelo |
+| **T0 free preview** | Bardera con `sao10k/l3.3-euryale-70b` vía OpenRouter | Activo; gratis/barato; límite diario |
+| **T1** | Propiedades definidas; **nombre de modelo no inventar** | Primer escalón de experiencia conversacional inmersiva; solo si Owner nombra el modelo |
+| **T2** | Propiedades definidas; **nombre de modelo no inventar** | Mejor modelo/calidad/memoria y compartición contextual de assets autorizados (foto/video); solo si Owner nombra el modelo |
 | **T3 aspiracional** | `orcarouter/Qwen3.8-27B-Uncensored-FP8` en Vast.ai RTX 4090 spot | GPU **gated por Owner** |
 
+- Los tiers escalan la experiencia de chat conversacional (modelo, calidad, memoria y assets autorizados); no crean una personalidad, profesión o capacidad semántica distinta para la Riot.
 - `rg -i gemini` debe quedar vacío en configs y runtime. Gemini descartado.
 - No nombrar el modelo técnico al usuario final; lenguaje humanizado.
 - **`max_tokens`:** decisión técnico/comercial **independiente** de ROOT-like. Valor actual del runtime: **mantener** hasta nueva decisión explícita del Owner (no derivar de “80 líneas” ni de dogma de preset).

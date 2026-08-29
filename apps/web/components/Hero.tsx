@@ -26,7 +26,7 @@ export function Hero({ onStart, onHow }: { onStart: () => void; onHow: () => voi
         <div className="live-panel" aria-label="Estado en vivo">
           <span className="label">
             <i className="live-dot" aria-hidden />
-            LIVE · LA BARDERA · FREE / PREVIEW
+            LIVE · LA BARDERA · T0 · FREE / PREVIEW
           </span>
           <span className="q">
             “¿otra vez llorando por la de tinder? vení que te enseño a chamuyar bien,

@@ -22,9 +22,9 @@ export function QueenRoster({ onStartBardera }: { onStartBardera: () => void }) 
   }, [lightbox]);
 
   return (
-    <section className="t1" id="bardera">
+    <section className="bardera-preview" id="bardera">
       <div className="wrap">
-        <span className="label">DISPONIBLE AHORA · FREE / PREVIEW</span>
+        <span className="label">T0 · DISPONIBLE AHORA · FREE / PREVIEW</span>
         <h2>LA BARDERA</h2>
         <p className="label">
           PUNK / BEER / 0% BUENA ONDA FAKE. La que te caga a pedos pero se queda.
@@ -52,8 +52,8 @@ export function QueenRoster({ onStartBardera }: { onStartBardera: () => void }) 
           ))}
         </div>
 
-        <p className="t1-badge">FREE / PREVIEW</p>
-        <p className="t1-features">
+        <p className="bardera-preview-badge">T0 · FREE / PREVIEW</p>
+        <p className="bardera-preview-features">
           ✦ Te bardea pero con amor &nbsp;✦ Roleplay de bar a las 3am &nbsp;✦ No te
           ghostea jamás
         </p>

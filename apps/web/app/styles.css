@@ -305,12 +305,12 @@ img {
 }
 
 /* BARDERA GALLERY */
-.t1 {
+.bardera-preview {
   padding: 70px 0;
   border-top: 1px solid #222;
 }
 
-.t1 h2 {
+.bardera-preview h2 {
   font-size: clamp(26px, 5vw, 48px);
   margin: 10px 0 4px;
 }
@@ -344,12 +344,12 @@ img {
   transform: scale(1.04);
 }
 
-.t1-features {
+.bardera-preview-features {
   margin: 12px 0 20px;
   color: var(--plata);
 }
 
-.t1-badge {
+.bardera-preview-badge {
   display: inline-block;
   font-family: var(--display);
   font-size: 22px;

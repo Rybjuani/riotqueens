@@ -15,9 +15,9 @@ export function TierGrid({
         <div className="wrap">
           <h2>ELEGÍ TU VENENO</h2>
           <p className="lead">
-            Bardera está online en free/preview. El resto del roster es canónico y
-            aparece cuando cada una esté lista. Los planes pagos se publicarán sólo
-            cuando existan de verdad.
+            Bardera está online como T0 free/preview. T1 y T2 escalan la experiencia
+            conversacional cuando existan de verdad; el resto del roster es canónico y
+            aparece cuando cada una esté lista.
           </p>
           <div className="cards">
             {queens.map((queen) => {
