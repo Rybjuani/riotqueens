@@ -32,9 +32,9 @@ export function Hero({ onStart, onHow }: { onStart: () => void; onHow: () => voi
             RiotQueens no te clava el visto. <strong>Te bardea, te quiere, se queda.</strong>
           </p>
           <p className="hero-protocol">
-            // anti perfect-girlfriend protocol activated
+            {"// anti perfect-girlfriend protocol activated"}
             <br />
-            // 0% filtro instagram, 100% quilombo realista
+            {"// 0% filtro instagram, 100% quilombo realista"}
           </p>
           <div className="ctas">
             <button type="button" className="btn solid" onClick={onStart}>
