@@ -98,6 +98,56 @@ No duplicar tablas de modelos dentro del dossier de personalidad. Fuente operaci
 - No nombrar el modelo técnico al usuario final; lenguaje humanizado.
 - **`max_tokens`:** decisión técnico/comercial **independiente** de ROOT-like. Valor actual del runtime: **mantener** hasta nueva decisión explícita del Owner (no derivar de “80 líneas” ni de dogma de preset).
 
+### 3.1 Datos de modelos y GPU (Owner, 2026-08-26)
+
+Se priorizan modelos unrestricted con multimodalidad nativa o fine-tunes sin moralina corporativa, aptos para vLLM en FP8/GGUF. La abliteration de Qwen conserva el tower de visión; unrestricted y multimodalidad no son objetivos excluyentes.
+
+| Repositorio / modelo | Método | Tracción / VRAM | Observación operacional |
+|---|---|---|---|
+| `orcarouter/Qwen3.8-27B-Uncensored-FP8` | Abliteration quirúrgica | ~29 GB FP8 | Seleccionado para T3; visión nativa; requiere GPU suficiente o cuantización adecuada |
+| `cognitivecomputations/dolphin-3.0-mistral-24b` | Fine-tune completo | ~16–20 GB en 4/8-bit | Candidato: function calling y seguimiento de instrucciones robusto |
+| `huihui-ai/Huihui-Qwen3.6-14B-Vision-abliterated` | Abliteration parcial | ~10–12 GB en 4-bit | Candidato: opción de GPU menor (p. ej. RTX 3090) con visión |
+| `AEON-7/Qwen3.8-27B-AEON-ULTIMATE-UNCENSORED-BF16` | Abliteration por coherencia | ~29 GB BF16 | Candidato: evaluado sobre sets harmful/sexual/harmless |
+
+Los tres marcados como **candidato** no son una asignación a T1/T2 ni autorización para inventar esa asignación. Solo el Owner puede seleccionar el modelo y proveedor de cada tier.
+
+Referencia de capacidad spot (a validar contra la cuantización/contexto elegidos antes de gastar):
+
+| Setup | Cuantización | VRAM de pesos | Costo orientativo |
+|---|---|---|---|
+| 1× RTX 4090 (24 GB) | FP8 o AWQ 4-bit | ~17–29 GB + KV cache | US$ 0.35–0.45/h |
+| 1× RTX 3090 (24 GB) | GGUF Q4_K_M o FP8 | ~16–20 GB + KV cache | US$ 0.25–0.35/h |
+
+### 3.2 vLLM, contexto y jurisdicción PAYG
+
+- Para el pod self-hosted se usa vLLM directo, sin wrapper pesado. Base de referencia para el modelo que autorice el Owner:
+
+  ```bash
+  python3 -m vllm.entrypoints.openai.api_server \
+    --model <MODELO_APROBADO> \
+    --port 8000 \
+    --api-key "$VLLM_API_KEY" \
+    --enable-prefix-caching \
+    --gpu-memory-utilization 0.90
+  ```
+
+- `--enable-prefix-caching` es obligatorio: el Dossier Maestro pesado es un system prompt repetido y no debe recomputarse íntegramente por turno.
+- El chat puede transitar una instancia spot fuera de Canadá durante el procesamiento. La instancia no persiste conversaciones: el estado durable sigue en VPS/Postgres. La jurisdicción del proveedor concreto se revisa antes de contratarlo.
+- La aceptación de voz se hace con hilo real manual del Owner y batería de modismos como regresión; queda derogada una matriz rígida 12/12 y no se paga contexto completo sólo para evaluar.
+- Multimodalidad futura del modelo **no** equivale a feature pública: no se anuncia ni entrega hasta que la ruta esté implementada y validada.
+
+### 3.3 Producto +18 y media
+
+- `+18` es elegibilidad legal; el producto no es entretenimiento sexual explícito. Es chat adulto, rol conversacional y registro punk/conurbano.
+- Los tiers agregan beneficios técnicos (adjuntar imagen, selfies con ropa, continuidad y recursos), no una personalidad, profesión o capacidad semántica distinta.
+- No se entrega contenido sin ropa en ningún tier. Toda media premium requiere autorización server-owned antes de llegar al navegador.
+- La conversación no se cape a por palabras sexuales, vulgares o técnicas: el límite de media es una capacidad real del producto, no un keyword filter.
+
+### 3.4 Transición cloud y memoria
+
+- El T0 cloud actual es un puente, no el estado final de voz. Si un provider externo produce refusals incompatibles o rompe coherencia/memoria, no se parchea el adaptador ni se deforma a Bardera: se migra a ejecución unrestricted self-hosted cuando el Owner habilite la infraestructura.
+- La migración self-hosted continúa gated por el Owner; Vast.ai/T3 queda para el final según la decisión de producto vigente.
+
 ---
 
 ## 4. Topología documental final
