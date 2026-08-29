@@ -62,6 +62,23 @@ class PostgresIdentityRepository:
         # Optional PostgresConsentRepository; typed loosely to avoid a cycle.
         self._consent_repository = consent_repository
 
+    @staticmethod
+    async def _active_tier(connection: asyncpg.Connection, user_id: object) -> ServiceTier:
+        """Resolve a server-owned active entitlement; users default to T0."""
+        value = await connection.fetchval(
+            """
+            SELECT tier FROM user_tier_entitlements
+            WHERE user_id = $1 AND (expires_at IS NULL OR expires_at > NOW())
+            ORDER BY granted_at DESC
+            LIMIT 1
+            """,
+            user_id,
+        )
+        try:
+            return ServiceTier(int(value)) if value is not None else ServiceTier.T0
+        except (TypeError, ValueError):
+            return ServiceTier.T0
+
     async def resolve(self, identity: VerifiedExternalIdentity) -> Principal:
         async with self._pool.acquire() as connection, connection.transaction():
             existing = await connection.fetchval(
@@ -101,12 +118,13 @@ class PostgresIdentityRepository:
                     user_id = existing
             else:
                 user_id = existing
+            tier = await self._active_tier(connection, user_id)
         acceptance = None
         if self._consent_repository is not None:
             acceptance = await self._consent_repository.latest_for_user(str(user_id))
         return Principal(
             user_id=str(user_id),
-            tier=ServiceTier.T0,
+            tier=tier,
             acceptance=acceptance,
         )
 
