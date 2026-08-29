@@ -174,6 +174,7 @@ Referencia de capacidad spot (a validar contra la cuantización/contexto elegido
 | 7 | P1 — Owner Investigation | **Cerrado / decidido (2026-08-29):** preparar estructura fullstack T1/T2/T3; T3 = `orcarouter/Qwen3.8-27B-Uncensored-FP8`; provider final = Vast.ai RTX 4090 spot contratada por Owner |
 | 8 | Identidad visual | **`Riotqueens-Ai-Landing-Mock.html` manda como ADN visual.** Readaptar la web actual sin romper su estructura útil; conservar slogans, sumar los faltantes y mantener coherencia de léxico, modismos, manifiestos, colores y estilo |
 | 9 | Owner Console visual | **Aprobada (2026-08-29):** consola de chat continuo para diagnóstico en UI privada. Se sirve sólo por `127.0.0.1` del VPS y túnel SSH; Root conserva el cartel upstream crudo. El bearer de Auth0 se carga una vez por sesión de pestaña y no se persiste en Git, runtime ni `localStorage`. |
+| 10 | Prueba T0 context-fit | **Aprobada temporalmente (2026-08-29):** para validar T0 bajo el límite upstream gratuito, el runtime usa un único Dossier Maestro compacto con margen para el hilo. El Dossier pleno previo está preservado por el tag `dossier-full-pre-t0-compact-20260829` y el release `ca3da33`; se restaura si el Owner rechaza el test. No es una decisión final de personalidad ni de provider. |
 
 ---
 
