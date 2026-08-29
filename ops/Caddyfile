@@ -12,7 +12,11 @@ https://riotqueens.live {
   # Owner Console is NOT public (Owner 2026-08-28: loopback + SSH tunnel).
   # Refuse admin surfaces at the edge even if someone has a token.
   @owner_console path /api/v1/root/* /api/v1/usuario/* /api/v1/compare /api/v1/compare/* /owner /owner/*
-  respond @owner_console 404
+  # `handle` is required here: it keeps this match before the catch-all web
+  # handler under Caddy's directive ordering rules.
+  handle @owner_console {
+    respond 404
+  }
 
   # Public FastAPI only — do NOT swallow Next.js routes like /api/token.
   handle /api/v1/chat* {
