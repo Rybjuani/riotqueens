@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from typing import Any
 
 import httpx
@@ -31,6 +32,7 @@ from app.domain.providers.errors import (
 )
 
 _UPSTREAM_BODY_PREVIEW_LIMIT = 2_000
+_KEY_MANAGEMENT_IDENTIFIER = re.compile(r"(?P<prefix>/keys/)[^/?\s\"}]+")
 
 
 def _env_float(name: str, default: float) -> float:
@@ -64,9 +66,14 @@ def _preview_body(text: str) -> str:
     return text[:_UPSTREAM_BODY_PREVIEW_LIMIT] + "…"
 
 
+def _redact_key_management_identifier(text: str) -> str:
+    """Keep the upstream diagnosis while never echoing an API-key management id."""
+    return _KEY_MANAGEMENT_IDENTIFIER.sub(r"\g<prefix>[redacted]", text)
+
+
 def build_upstream_cartel(response: httpx.Response) -> dict[str, Any]:
     """Build the Owner-visible OpenRouter/OpenAI error cartel (no secrets)."""
-    body_text = response.text or ""
+    body_text = _redact_key_management_identifier(response.text or "")
     cartel: dict[str, Any] = {
         "status": response.status_code,
         "body_preview": _preview_body(body_text),
@@ -79,7 +86,11 @@ def build_upstream_cartel(response: httpx.Response) -> dict[str, Any]:
         error = data.get("error")
         if isinstance(error, dict):
             cartel["error"] = {
-                key: error.get(key)
+                key: (
+                    _redact_key_management_identifier(value)
+                    if isinstance(value := error.get(key), str)
+                    else value
+                )
                 for key in ("message", "code", "type", "reason", "status")
                 if error.get(key) is not None
             }

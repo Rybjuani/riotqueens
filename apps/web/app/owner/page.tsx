@@ -72,6 +72,7 @@ async function postOwner(
 
 export default function OwnerConsolePage() {
   const [token, setToken] = useState("");
+  const [tokenHydrated, setTokenHydrated] = useState(false);
   const [mode, setMode] = useState<Mode>("usuario");
   const [rootSystem, setRootSystem] = useState<RootSystem>("empty");
   const [conversationId, setConversationId] = useState(newConversationId);
@@ -83,12 +84,14 @@ export default function OwnerConsolePage() {
 
   useEffect(() => {
     setToken(window.sessionStorage.getItem(TOKEN_STORAGE_KEY) ?? "");
+    setTokenHydrated(true);
   }, []);
 
   useEffect(() => {
+    if (!tokenHydrated) return;
     if (token) window.sessionStorage.setItem(TOKEN_STORAGE_KEY, token);
     else window.sessionStorage.removeItem(TOKEN_STORAGE_KEY);
-  }, [token]);
+  }, [token, tokenHydrated]);
 
   const modeDescription = useMemo(() => {
     if (mode === "usuario") return "Pipeline público real, con memoria persistida y traza privada.";
@@ -170,9 +173,13 @@ export default function OwnerConsolePage() {
 
       <section className="owner-console__notice">
         <p>
-          Abrila sólo con ambos túneles SSH activos. El token de Auth0 queda únicamente en esta pestaña y nunca viaja
-          por la ruta pública. Root puede mostrar el cartel crudo de OpenRouter.
+          Abrila sólo con ambos túneles SSH activos. Con tu sesión de RiotQueens abierta, obtené el <code>accessToken</code>{" "}
+          una sola vez en el enlace de abajo y pegalo aquí. No uses un ID token. Root puede mostrar el cartel crudo de
+          OpenRouter.
         </p>
+        <a className="owner-console__token-link" href="https://riotqueens.live/api/token" target="_blank" rel="noreferrer">
+          ABRIR /API/TOKEN
+        </a>
       </section>
 
       <section className="owner-console__controls" aria-label="Controles de Owner Console">

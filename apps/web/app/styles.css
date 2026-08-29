@@ -107,6 +107,19 @@ img {
   font-size: 13px;
 }
 
+.owner-console__notice code {
+  color: var(--cyan);
+}
+
+.owner-console__token-link {
+  display: inline-block;
+  margin-top: 10px;
+  color: var(--cyan);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
 .owner-console__controls {
   display: grid;
   grid-template-columns: minmax(260px, 1fr) auto auto;

@@ -239,6 +239,45 @@ def test_root_upstream_error_cartel(monkeypatch: pytest.MonkeyPatch) -> None:
     assert detail["owner"]["local_guard"]["bypass"] is True
 
 
+def test_root_cartel_redacts_key_management_identifier(monkeypatch: pytest.MonkeyPatch) -> None:
+    main_mod = _reload_main(monkeypatch, RIOTQUEENS_OWNER_USER_IDS="smoke")
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            403,
+            json={
+                "error": {
+                    "message": "Key limit exceeded: https://openrouter.ai/workspaces/default/keys/sensitive-key-id"
+                }
+            },
+        )
+
+    provider = OpenAICompatibleProvider(
+        base_url="https://openrouter.example/api/v1",
+        api_key="sk-test",
+        model="sao10k/l3.3-euryale-70b",
+        transport=httpx.MockTransport(handler),
+        raw_errors=True,
+    )
+    main_mod.router = ModelRouter(providers={Route.FAST_CHAT: provider}, max_retries=0)
+    client = TestClient(main_mod.app)
+    res = client.post(
+        "/v1/root/chat",
+        json={
+            "character_id": "bardera",
+            "conversation_id": "c-key-redaction",
+            "user_id": "smoke",
+            "message": "hola",
+            "system": "empty",
+        },
+    )
+    detail = res.json()["detail"]
+    rendered = json.dumps(detail)
+    assert res.status_code == 502
+    assert "sensitive-key-id" not in rendered
+    assert "/keys/[redacted]" in rendered
+
+
 @pytest.mark.asyncio
 async def test_root_provider_skips_fallback_chain() -> None:
     calls: list[str] = []
